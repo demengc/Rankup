@@ -1,0 +1,165 @@
+menu-slots: 36
+menu-title: "&1&lRanks"
+
+rank-materials:
+  completed: "GREEN_WOOL"
+  current: "GREEN_WOOL"
+  next: "RED_WOOL"
+  not-found: "RED_WOOL"
+
+rank-display-names:
+  completed: "&4[&7Nostalgic&8Prison&4] &aCompleted Rank: &b%rank%"
+  current: "&4[&7Nostalgic&8Prison&4] &6Current Rank: &b%rank%"
+  next: "&4[&7Nostalgic&8Prison&4] &6$%cost% to rankup! &bCurrent balance: $%balance%"
+  not-found: "&4[&7Nostalgic&8Prison&4] &6$%cost% to rankup! &bCurrent balance: $%balance%"
+
+prestige-materials:
+  completed: "BEDROCK"
+  current: "BEDROCK"
+  next: "NETHER_STAR"
+  not-found: "NETHER_STAR"
+
+prestige-display-names:
+  completed: "&4[&7Nostalgic&8Prison&4] &aCompleted Prestige: &b%prestige%"
+  current: "&4[&7Nostalgic&8Prison&4] &6Current Prestige: &b%prestige%"
+  next: "&4[&7Nostalgic&8Prison&4] &6$%cost% to prestige! &bCurrent balance: $%balance%"
+  not-found: "&4[&7Nostalgic&8Prison&4] &6$%cost% to prestige! &bCurrent balance: $%balance%"
+
+ranks:
+  A:
+    slot: 0
+    cost: 0
+    commands:
+      - "say This is an example!"
+      - "say You can use the %player% placeholder!"
+  B:
+    slot: 1
+    cost: 100
+    commands: []
+  C:
+    slot: 2
+    cost: 100
+    commands: []
+  D:
+    slot: 3
+    cost: 100
+    commands: []
+  E:
+    slot: 4
+    cost: 100
+    commands: []
+  F:
+    slot: 5
+    cost: 100
+    commands: []
+  G:
+    slot: 6
+    cost: 100
+    commands: []
+  H:
+    slot: 7
+    cost: 100
+    commands: []
+  I:
+    slot: 8
+    cost: 100
+    commands: []
+  J:
+    slot: 9
+    cost: 100
+    commands: []
+  K:
+    slot: 10
+    cost: 100
+    commands: []
+  L:
+    slot: 11
+    cost: 100
+    commands: []
+  M:
+    slot: 12
+    cost: 100
+    commands: []
+  N:
+    slot: 13
+    cost: 100
+    commands: []
+  O:
+    slot: 14
+    cost: 100
+    commands: []
+  P:
+    slot: 15
+    cost: 100
+    commands: []
+  Q:
+    slot: 16
+    cost: 100
+    commands: []
+  R:
+    slot: 17
+    cost: 100
+    commands: []
+  S:
+    slot: 18
+    cost: 100
+    commands: []
+  T:
+    slot: 19
+    cost: 100
+    commands: []
+  U:
+    slot: 20
+    cost: 100
+    commands: []
+  V:
+    slot: 21
+    cost: 100
+    commands: []
+  W:
+    slot: 22
+    cost: 100
+    commands: []
+  X:
+    slot: 23
+    cost: 100
+    commands: []
+  Y:
+    slot: 24
+    cost: 100
+    commands: []
+  Z:
+    slot: 25
+    cost: 100
+    commands: []
+  Free:
+    slot: 26
+    cost: 100
+    commands: []
+
+
+prestiges:
+  0:
+    slot: none
+    cost: 0
+    commands: []
+  1:
+    slot: 27
+    cost: 1234567
+    commands: []
+  2:
+    slot: 29
+    cost: 123456
+    commands: []
+  3:
+    slot: 31
+    cost: 123456
+    commands: []
+  4:
+    slot: 33
+    cost: 123456
+    commands: []
+  5:
+    slot: 35
+    cost: 123456
+    commands: []

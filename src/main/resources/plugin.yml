@@ -1,0 +1,7 @@
+name: Rankup
+version: ${project.version}
+main: com.demeng7215.rankup.Rankup
+api-version: 1.13
+depend: [Vault]
+description: A ranking and prestige plugin.
+website: https://demeng7215.com

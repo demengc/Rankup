@@ -1,0 +1,9 @@
+prefix: "&7[&2Rankup&7] &r"
+
+reloaded: "&aFiles have been reloaded!"
+console: "&aThis command can only be executed as a player."
+
+insufficient-balance: "&aInsufficient balance! You must have &f$%cost%&a!"
+
+ranked-up: "&f%player% &ahas ranked up to &f%rank%&a!"
+prestiged: "&f%player% &ahas prestiged to &f%prestige%&a!"
