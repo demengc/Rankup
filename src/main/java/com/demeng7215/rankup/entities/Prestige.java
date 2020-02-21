@@ -57,6 +57,11 @@ public class Prestige {
 			cDisplayName = setPlaceholders(p.getPlayer(), settings.getString("prestige-display-names.current"),
 					prestigeNumber, cCost);
 
+		}else if(!p.getRankName().equals("Free")) {
+			cMaterial = ItemBuilder.getMaterial(settings.getString("prestige-materials.not-found"));
+			cDisplayName = setPlaceholders(p.getPlayer(), settings.getString("prestige-display-names.not-found"),
+					prestigeNumber, cCost);
+
 		} else if (p.getPrestigeNumber() + 1 == prestigeNumber) {
 			cMaterial = ItemBuilder.getMaterial(settings.getString("prestige-materials.next"));
 			cDisplayName = setPlaceholders(p.getPlayer(), settings.getString("prestige-display-names.next"),

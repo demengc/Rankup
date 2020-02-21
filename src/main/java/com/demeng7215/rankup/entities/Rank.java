@@ -9,7 +9,6 @@ import com.demeng7215.rankup.preferences.Message;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -103,7 +102,7 @@ public class Rank {
 	}
 
 	public static String getNextRankName(String rankName) {
-		if(rankName.equals("Free")) return "Nothing";
+		if (rankName.equals("Free")) return "Nothing";
 		return getRankNames().get(getRankNames().indexOf(rankName) + 1);
 	}
 
@@ -116,7 +115,7 @@ public class Rank {
 	public static double calculateCost(String rankName, int prestige) {
 		final double og = Rankup.getInstance().getSettings().getInt("ranks." + rankName + ".cost");
 		if (prestige == 0) return og;
-		return og * Math.pow(2, prestige);
+		return og * prestige + og;
 	}
 
 	public static List<String> getRankNames() {
