@@ -4,8 +4,6 @@ import dev.demeng.demlib.item.ItemCreator;
 import dev.demeng.demlib.message.MessageUtils;
 import dev.demeng.rankup.Rankup;
 import dev.demeng.rankup.preferences.Message;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -15,27 +13,39 @@ import org.bukkit.inventory.ItemStack;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-@AllArgsConstructor
 public class Rank {
 
-  @Getter private final String name;
+  private final String name;
+  private final int slot;
+  private final double cost;
+  private final List<String> commands;
+  private final ItemStack material;
+  private final String displayName;
+  private final List<String> lore;
 
-  @Getter private final int slot;
-
-  @Getter private final double cost;
-
-  @Getter private final List<String> commands;
-
-  @Getter private final ItemStack material;
-
-  @Getter private final String displayName;
+  public Rank(
+      String name,
+      int slot,
+      double cost,
+      List<String> commands,
+      ItemStack material,
+      String displayName,
+      List<String> lore) {
+    this.name = name;
+    this.slot = slot;
+    this.cost = cost;
+    this.commands = commands;
+    this.material = material;
+    this.displayName = displayName;
+    this.lore = lore;
+  }
 
   public static Rank of(RankedPlayer p, String rankName) {
 
     final FileConfiguration settings = Rankup.getInstance().getSettings();
     final String path = "ranks." + rankName + ".";
-
     final int cSlot = settings.getInt(path + "slot");
     final double cCost = calculateCost(rankName, p.getPrestigeNumber());
     final List<String> cCommands = new ArrayList<>();
@@ -46,33 +56,64 @@ public class Rank {
 
     final ItemStack cMaterial;
     final String cDisplayName;
+    final List<String> cLore;
 
     if (p.getRankName().equals(rankName)) {
-      cMaterial = ItemCreator.getMaterial(settings.getString("rank-materials.current"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("rank-materials.current")));
       cDisplayName =
           setPlaceholders(
-              p.getPlayer(), settings.getString("rank-display-names.current"), rankName, cCost);
+              p.getPlayer(),
+              Objects.requireNonNull(settings.getString("rank-display-names.current")),
+              rankName,
+              cCost);
+      cLore = settings.getStringList("rank-lores.current");
 
     } else if (getNextRankName(p.getRankName()).equals(rankName)) {
-      cMaterial = ItemCreator.getMaterial(settings.getString("rank-materials.next"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("rank-materials.next")));
       cDisplayName =
           setPlaceholders(
-              p.getPlayer(), settings.getString("rank-display-names.next"), rankName, cCost);
+              p.getPlayer(),
+              Objects.requireNonNull(settings.getString("rank-display-names.next")),
+              rankName,
+              cCost);
+      cLore = settings.getStringList("rank-lores.next");
 
     } else if (getPreviousRankNames(p.getRankName()).contains(rankName)) {
-      cMaterial = ItemCreator.getMaterial(settings.getString("rank-materials.completed"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("rank-materials.completed")));
       cDisplayName =
           setPlaceholders(
-              p.getPlayer(), settings.getString("rank-display-names.completed"), rankName, cCost);
+              p.getPlayer(),
+              Objects.requireNonNull(settings.getString("rank-display-names.completed")),
+              rankName,
+              cCost);
+      cLore = settings.getStringList("rank-lores.completed");
 
     } else {
-      cMaterial = ItemCreator.getMaterial(settings.getString("rank-materials.not-found"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("rank-materials.not-found")));
       cDisplayName =
           setPlaceholders(
-              p.getPlayer(), settings.getString("rank-display-names.not-found"), rankName, cCost);
+              p.getPlayer(),
+              Objects.requireNonNull(settings.getString("rank-display-names.not-found")),
+              rankName,
+              cCost);
+      cLore = settings.getStringList("rank-lores.not-found");
     }
 
-    return new Rank(rankName, cSlot, cCost, cCommands, cMaterial, cDisplayName);
+    final ArrayList<String> finalLore = new ArrayList<>();
+
+    for (String line : cLore) {
+      finalLore.add(setPlaceholders(p.getPlayer(), line, rankName, cCost));
+    }
+
+    return new Rank(rankName, cSlot, cCost, cCommands, cMaterial, cDisplayName, finalLore);
   }
 
   public void give(Player p) {
@@ -81,21 +122,20 @@ public class Rank {
 
     p.closeInventory();
 
-    if (!eco.has(p, cost)) {
-      MessageUtils.tell(p, setPlaceholders(p, Message.INSUFFICIENT_BALANCE, name, cost));
-      return;
+    if (!eco.has(p, this.cost)) {
+      MessageUtils.tell(p, setPlaceholders(p, Message.INSUFFICIENT_BALANCE, this.name, this.cost));
+
+    } else {
+      (new RankedPlayer(p)).setRank(this.name);
+      Rankup.getInstance().getEconomy().withdrawPlayer(p, this.cost);
+
+      for (String cmd : commands) {
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+      }
+
+      MessageUtils.broadcast(
+          Message.RANKED_UP.replace("%player%", p.getName()).replace("%rank%", this.name));
     }
-
-    new RankedPlayer(p).setRank(name);
-
-    Rankup.getInstance().getEconomy().withdrawPlayer(p, cost);
-
-    for (String cmd : commands) {
-      Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-    }
-
-    MessageUtils.broadcast(
-        Message.RANKED_UP.replace("%player%", p.getName()).replace("%rank%", name));
   }
 
   private static String setPlaceholders(Player p, String s, String name, double cost) {
@@ -106,26 +146,28 @@ public class Rank {
   }
 
   public static String getNextRankName(String rankName) {
-    if (rankName.equals("Free")) return "Nothing";
-    return getRankNames().get(getRankNames().indexOf(rankName) + 1);
+    return rankName.equals("Free")
+        ? "Nothing"
+        : getRankNames().get(getRankNames().indexOf(rankName) + 1);
   }
 
   public static List<String> getPreviousRankNames(String rankName) {
     final List<String> names = new ArrayList<>();
-    for (int i = getRankNames().indexOf(rankName) - 1; i >= 0; i--)
+
+    for (int i = getRankNames().indexOf(rankName) - 1; i >= 0; --i) {
       names.add(getRankNames().get(i));
+    }
+
     return names;
   }
 
   public static double calculateCost(String rankName, int prestige) {
-    final double og = Rankup.getInstance().getSettings().getInt("ranks." + rankName + ".cost");
-    if (prestige == 0) return og;
-    return og * prestige + og;
+    double og = Rankup.getInstance().getSettings().getInt("ranks." + rankName + ".cost");
+    return prestige == 0 ? og : og * (double) prestige + og;
   }
 
   public static List<String> getRankNames() {
     final List<String> names = new ArrayList<>();
-
     names.add("A");
     names.add("B");
     names.add("C");
@@ -153,7 +195,26 @@ public class Rank {
     names.add("Y");
     names.add("Z");
     names.add("Free");
-
     return names;
+  }
+
+  public String getName() {
+    return this.name;
+  }
+
+  public int getSlot() {
+    return this.slot;
+  }
+
+  public ItemStack getMaterial() {
+    return this.material;
+  }
+
+  public String getDisplayName() {
+    return this.displayName;
+  }
+
+  public List<String> getLore() {
+    return this.lore;
   }
 }

@@ -4,8 +4,6 @@ import dev.demeng.demlib.item.ItemCreator;
 import dev.demeng.demlib.message.MessageUtils;
 import dev.demeng.rankup.Rankup;
 import dev.demeng.rankup.preferences.Message;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,27 +14,42 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-@AllArgsConstructor
 public class Prestige {
 
-  @Getter private final int number;
+  private final int number;
+  private final int slot;
+  private final double cost;
+  private final List<String> commands;
+  private final ItemStack material;
+  private final String displayName;
+  private final List<String> lore;
 
-  @Getter private final int slot;
-
-  @Getter private final double cost;
-
-  @Getter private final List<String> commands;
-
-  @Getter private final ItemStack material;
-
-  @Getter private final String displayName;
+  public Prestige(
+      int number,
+      int slot,
+      double cost,
+      List<String> commands,
+      ItemStack material,
+      String displayName,
+      List<String> lore) {
+    this.number = number;
+    this.slot = slot;
+    this.cost = cost;
+    this.commands = commands;
+    this.material = material;
+    this.displayName = displayName;
+    this.lore = lore;
+  }
 
   public static Prestige of(RankedPlayer p, int prestigeNumber) {
 
+    final List<String> cLore;
+    final ItemStack cMaterial;
+    final String cDisplayName;
     final FileConfiguration settings = Rankup.getInstance().getSettings();
     final String path = "prestiges." + prestigeNumber + ".";
-
     final int cSlot = settings.getInt(path + "slot");
     final double cCost = settings.getInt(path + "cost");
     final List<String> cCommands = new ArrayList<>();
@@ -45,56 +58,74 @@ public class Prestige {
       cCommands.add(cmd.replace("%player%", p.getName()));
     }
 
-    final ItemStack cMaterial;
-    final String cDisplayName;
-
     if (p.getPrestigeNumber() == prestigeNumber) {
-      cMaterial = ItemCreator.getMaterial(settings.getString("prestige-materials.current"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("prestige-materials.current")));
       cDisplayName =
-          setPlaceholders(
+          Prestige.setPlaceholders(
               p.getPlayer(),
-              settings.getString("prestige-display-names.current"),
+              Objects.requireNonNull(settings.getString("prestige-display-names.current")),
               prestigeNumber,
               cCost);
+      cLore = settings.getStringList("prestige-lores.current");
 
     } else if (!p.getRankName().equals("Free")) {
-      cMaterial = ItemCreator.getMaterial(settings.getString("prestige-materials.not-found"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("prestige-materials.not-found")));
       cDisplayName =
-          setPlaceholders(
+          Prestige.setPlaceholders(
               p.getPlayer(),
-              settings.getString("prestige-display-names.not-found"),
+              Objects.requireNonNull(settings.getString("prestige-display-names.not-found")),
               prestigeNumber,
               cCost);
+      cLore = settings.getStringList("prestige-lores.not-found");
 
     } else if (p.getPrestigeNumber() + 1 == prestigeNumber) {
-      cMaterial = ItemCreator.getMaterial(settings.getString("prestige-materials.next"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("prestige-materials.next")));
       cDisplayName =
-          setPlaceholders(
+          Prestige.setPlaceholders(
               p.getPlayer(),
-              settings.getString("prestige-display-names.next"),
+              Objects.requireNonNull(settings.getString("prestige-display-names.next")),
               prestigeNumber,
               cCost);
+      cLore = settings.getStringList("prestige-lores.next");
 
     } else if (p.getPrestigeNumber() > prestigeNumber) {
-      cMaterial = ItemCreator.getMaterial(settings.getString("prestige-materials.completed"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("prestige-materials.completed")));
       cDisplayName =
-          setPlaceholders(
+          Prestige.setPlaceholders(
               p.getPlayer(),
-              settings.getString("prestige-display-names.completed"),
+              Objects.requireNonNull(settings.getString("prestige-display-names.completed")),
               prestigeNumber,
               cCost);
+      cLore = settings.getStringList("prestige-lores.completed");
 
     } else {
-      cMaterial = ItemCreator.getMaterial(settings.getString("prestige-materials.not-found"));
+      cMaterial =
+          ItemCreator.getMaterial(
+              Objects.requireNonNull(settings.getString("prestige-materials.not-found")));
       cDisplayName =
-          setPlaceholders(
+          Prestige.setPlaceholders(
               p.getPlayer(),
-              settings.getString("prestige-display-names.not-found"),
+              Objects.requireNonNull(settings.getString("prestige-display-names.not-found")),
               prestigeNumber,
               cCost);
+      cLore = settings.getStringList("prestige-lores.not-found");
     }
 
-    return new Prestige(prestigeNumber, cSlot, cCost, cCommands, cMaterial, cDisplayName);
+    final List<String> finalLore = new ArrayList<>();
+    for (String s : cLore) {
+      finalLore.add(Prestige.setPlaceholders(p.getPlayer(), s, prestigeNumber, cCost));
+    }
+
+    return new Prestige(
+        prestigeNumber, cSlot, cCost, cCommands, cMaterial, cDisplayName, finalLore);
   }
 
   public void give(Player p) {
@@ -103,23 +134,24 @@ public class Prestige {
 
     p.closeInventory();
 
-    if (!eco.has(p, cost)) {
-      MessageUtils.tell(p, setPlaceholders(p, Message.INSUFFICIENT_BALANCE, number, cost));
+    if (!eco.has(p, this.cost)) {
+      MessageUtils.tell(
+          p, Prestige.setPlaceholders(p, Message.INSUFFICIENT_BALANCE, this.number, this.cost));
       return;
     }
 
     final RankedPlayer rp = new RankedPlayer(p);
     rp.setRank("A");
-    rp.setPrestige(number);
+    rp.setPrestige(this.number);
 
-    Rankup.getInstance().getEconomy().withdrawPlayer(p, cost);
+    Rankup.getInstance().getEconomy().withdrawPlayer(p, this.cost);
 
     for (String cmd : commands) {
       Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
     }
 
     MessageUtils.broadcast(
-        Message.PRESTIGED.replace("%player%", p.getName()).replace("%prestige%", "" + number));
+        Message.PRESTIGED.replace("%player%", p.getName()).replace("%prestige%", "" + this.number));
   }
 
   private static String setPlaceholders(Player p, String s, int prestige, double cost) {
@@ -130,14 +162,36 @@ public class Prestige {
   }
 
   public static List<Integer> getPrestigeNumbers() {
-    final List<Integer> numbers = new ArrayList<>();
 
+    final List<Integer> numbers = new ArrayList<>();
     for (String s :
-        Rankup.getInstance().getSettings().getConfigurationSection("prestiges").getKeys(false))
+        Objects.requireNonNull(
+                Rankup.getInstance().getSettings().getConfigurationSection("prestiges"))
+            .getKeys(false)) {
       numbers.add(Integer.parseInt(s));
+    }
 
     Collections.sort(numbers);
-
     return numbers;
+  }
+
+  public int getNumber() {
+    return this.number;
+  }
+
+  public int getSlot() {
+    return this.slot;
+  }
+
+  public ItemStack getMaterial() {
+    return this.material;
+  }
+
+  public String getDisplayName() {
+    return this.displayName;
+  }
+
+  public List<String> getLore() {
+    return this.lore;
   }
 }

@@ -14,39 +14,47 @@ public class RankupMenu extends Menu {
   public RankupMenu(RankedPlayer p) {
     super(Setting.MENU_SLOTS, Setting.MENU_TITLE);
 
-    for (String name : Rank.getRankNames()) {
-      final Rank rank = Rank.of(p, name);
-      final ItemStack stack =
-          ItemCreator.quickBuild(rank.getMaterial(), rank.getDisplayName(), null);
+    for (String rankName : Rank.getRankNames()) {
 
-      final MenuButton button =
+      final ItemStack stack;
+      final MenuButton button;
+
+      Rank rank = Rank.of(p, rankName);
+      stack = ItemCreator.quickBuild(rank.getMaterial(), rank.getDisplayName(), rank.getLore());
+      button =
           new MenuButton(
               rank.getSlot(),
               stack,
-              e -> {
-                if (Rank.getNextRankName(p.getRankName()).equals(rank.getName()))
+              (e) -> {
+                if (Rank.getNextRankName(p.getRankName()).equals(rank.getName())) {
                   rank.give(p.getPlayer());
+                }
               });
 
       setItem(button);
     }
 
-    for (int number : Prestige.getPrestigeNumbers()) {
+    for (int prestigeNumber : Prestige.getPrestigeNumbers()) {
 
-      final Prestige prestige = Prestige.of(p, number);
-      final ItemStack stack =
-          ItemCreator.quickBuild(prestige.getMaterial(), prestige.getDisplayName(), null);
+      final ItemStack stack;
+      final MenuButton button;
 
-      if (number != 0) {
-        final MenuButton button =
+      final Prestige prestige = Prestige.of(p, prestigeNumber);
+      stack =
+          ItemCreator.quickBuild(
+              prestige.getMaterial(), prestige.getDisplayName(), prestige.getLore());
+
+      if (prestigeNumber != 0) {
+        button =
             new MenuButton(
                 prestige.getSlot(),
                 stack,
-                e -> {
+                (e) -> {
                   if (p.getPrestigeNumber() + 1 == prestige.getNumber()
-                      && p.getRankName().equals("Free")) prestige.give(p.getPlayer());
+                      && p.getRankName().equals("Free")) {
+                    prestige.give(p.getPlayer());
+                  }
                 });
-
         setItem(button);
       }
     }

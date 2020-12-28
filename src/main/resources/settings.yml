@@ -13,6 +13,16 @@ rank-display-names:
   next: "&4[&7Nostalgic&8Prison&4] &6$%cost% to rankup! &bCurrent balance: $%balance%"
   not-found: "&4[&7Nostalgic&8Prison&4] &6$%cost% to rankup! &bCurrent balance: $%balance%"
 
+rank-lores:
+  completed:
+    - "&7This is a completed rank."
+  current:
+    - "&7This is your current rank."
+  next:
+    - "&7This is your next rank."
+  not-found:
+    - "&7You have not found this rank yet."
+
 prestige-materials:
   completed: "BEDROCK"
   current: "BEDROCK"
@@ -24,6 +34,16 @@ prestige-display-names:
   current: "&4[&7Nostalgic&8Prison&4] &6Current Prestige: &b%prestige%"
   next: "&4[&7Nostalgic&8Prison&4] &6$%cost% to prestige! &bCurrent balance: $%balance%"
   not-found: "&4[&7Nostalgic&8Prison&4] &6$%cost% to prestige! &bCurrent balance: $%balance%"
+
+prestige-lores:
+  completed:
+    - "&7This is a completed prestige."
+  current:
+    - "&7This is your current prestige."
+  next:
+    - "&7This is your next prestige."
+  not-found:
+    - "&7You have not found this prestige yet."
 
 ranks:
   A:
